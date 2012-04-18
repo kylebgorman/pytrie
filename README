@@ -4,8 +4,7 @@ Kyle Gorman <kgorman@ling.upenn.edu>
 
 HOW TO INSTALL:
 
-The code can be placed in your working directory or in your $PYTHONPATH and then
-imported in your Python script. 
+The code can be placed in your working directory or in your $PYTHONPATH and then imported in your Python script. 
 
 SYNOPSIS:
 

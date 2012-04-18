@@ -25,6 +25,20 @@
 # 
 # Kyle Gorman <kgorman@ling.upenn.ed>
 
+def memoize(f):
+    """ 
+    Very basic memoization function
+    """
+    cache = {}
+    def memf(*x):
+        if x in cache:
+            return cache[x]
+        else:
+            answer = f(*x)
+            cache[x] = answer
+            return answer
+    return memf
+
 
 class Trie(object):
     """ 
@@ -38,6 +52,8 @@ class Trie(object):
     # check membership
     >>> 'appl' in t
     False
+    >>> 'appl' in t # test memoization
+    False
     >>> 'apple' in t
     True
     >>> 'apples' in t
@@ -48,6 +64,8 @@ class Trie(object):
     # autocompletion
     >>> ' '.join(sorted(list(t.autocomplete('appl'))))
     'apple applejack applesauce application'
+    >>> ' '.join(sorted(list(t.autocomplete('appl'))))
+    'apple applejack applesauce application'
     >>> ' '.join(sorted(list(t.autocomplete('foobar'))))
     ''
     """
@@ -55,10 +73,8 @@ class Trie(object):
     def __init__(self):
         self.root = {}
 
-
     def __repr__(self):
         return 'Trie(%r)' % self.root
-
 
     # pickling and unpickling
     def __getstate__(self):
@@ -67,14 +83,13 @@ class Trie(object):
         """
         return self.root
 
-
     def __setstate__(self, other):
         """
         for unpickling
         """
         self.root = other
 
-
+    @memoize
     def __contains__(self, word):
         """ 
         True if "word" is a licit completion 
@@ -91,7 +106,6 @@ class Trie(object):
         else: # an incomplete string
             return False
 
-
     def add(self, word):
         """
         add an iterable (probably a string) to the trie
@@ -106,14 +120,12 @@ class Trie(object):
                 curr_node = curr_node[char] # then enter it
         curr_node[None] = word # None is then the "terminal" symbol
 
-
     def update(self, words):
         """ 
         add all elements in words to the trie
         """
         for word in words:
             self.add(word)
-
 
     def _traverse(self, curr_node):
         for char in curr_node:
@@ -122,7 +134,6 @@ class Trie(object):
             else:
                 yield self._traverse(curr_node[char])
 
-
     def _smash(self, iterable):
         for i in iterable:
             if getattr(i, '__iter__', False):
@@ -130,7 +141,6 @@ class Trie(object):
                     yield j
             else: # base case
                 yield i
-
 
     def autocomplete(self, prefix):
         """ 
