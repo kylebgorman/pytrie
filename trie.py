@@ -25,19 +25,38 @@
 # 
 # Kyle Gorman <kgorman@ling.upenn.ed>
 
-def memoize(f):
-    """ 
-    Very basic memoization function
+from functools import partial
+
+class memoize(object):
     """
-    cache = {}
-    def memf(*x):
-        if x in cache:
-            return cache[x]
-        else:
-            answer = f(*x)
-            cache[x] = answer
-            return answer
-    return memf
+    Decorator. Caches a function's return value each time it is called.
+    If called later with the same arguments, the cached value is returned 
+    (not reevaluated).
+    """
+
+    def __init__(self, func):
+        self.func = func
+        self.cache = {}
+
+    def __call__(self, *args):
+        try:
+            return self.cache[args]
+        except KeyError:
+            value = self.func(*args)
+            self.cache[args] = value
+            return value
+        except TypeError:
+            # uncachable -- for instance, passing a list as an argument.
+            # Better to not cache than to blow up entirely.
+            return self.func(*args)
+
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self.func
+        return partial(self, obj)
+
+    def __repr__(self):
+        return self.func.__doc__
 
 
 class Trie(object):
@@ -64,7 +83,7 @@ class Trie(object):
     # autocompletion
     >>> ' '.join(sorted(list(t.autocomplete('appl'))))
     'apple applejack applesauce application'
-    >>> ' '.join(sorted(list(t.autocomplete('appl'))))
+    >>> ' '.join(sorted(list(t.autocomplete('appl'))))   # test memoization
     'apple applejack applesauce application'
     >>> ' '.join(sorted(list(t.autocomplete('foobar'))))
     ''
